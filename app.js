@@ -1,14 +1,17 @@
-const Dotenv = require('dotenv').config();
-const IGDB = require('igdb-api-node').default;
-const Keys = require('./keys.js');
+const igdb = require('./igdb.js');
 
-const igdbClient = IGDB(Keys.igdb);
+let search = process.argv[2];
 
-igdbClient.games({
-    fields: '*',
-    limit: 5
-}).then(response => {
-    console.log(response);
-}).catch(error => {
-    console.log(error);
-});
+start();
+
+async function start() {
+    try {
+        let games = await igdb.searchGame(search).catch('Error');
+    } catch(err) {
+        console.log(err);
+    }
+    
+}
+
+
+
