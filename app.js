@@ -1,16 +1,11 @@
 const igdb = require('./igdb.js');
 
-let search = process.argv[2];
+let search = process.argv.slice(2).join(' ');
 
 start();
 
 async function start() {
-    try {
-        let games = await igdb.searchGame(search).catch('Error');
-    } catch(err) {
-        console.log(err);
-    }
-    
+    igdb.searchGame(search);
 }
 
 

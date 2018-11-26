@@ -29,7 +29,9 @@ function postPrompt(games, gameName) {
             when: answers => answers.post
         }
     ]).then(answers => {
-        console.log('Message \"' + answers.postMessage + '\" posted!');
+        if (answers.post) {
+            console.log('Message \"' + answers.postMessage + '\" posted!');
+        }
     });
 }
 
