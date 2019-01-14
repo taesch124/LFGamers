@@ -1,37 +1,43 @@
 const Dotenv = require('dotenv').config();
 const IGDB = require('igdb-api-node').default;
-const Keys = require('./keys.js');
+const Keys = require('../config/keys');
 const igdbClient = IGDB(Keys.igdb);
-const Game = require('./game.js');
-const Prompts = require('./prompts.js');
+const Game = require('../models/game.js');
 
-async function searchGame(searchPhrase) {
+function searchGameByPhrase(searchPhrase, callback) {
     igdbClient.games({
         search: searchPhrase,
         fields: '*',
         limit: 5
     }).then(response => {
         let jsonArr = response.body;
-        let games = [];
+        let games = Game.getGamesFromIGDB(jsonArr);
 
-        for(let i = 0; i < jsonArr.length; i++) {
-            let game = new Game(jsonArr[i]);
-            game.consoleInfo();
-            games.push(game);
-        }
-
-        Prompts.gameSelectPrompt(games);
-        return games;
+        if (typeof callback === 'function') callback(games);
     }).catch(error => {
-        console.log(error);
+        throw error;
     });
 }
 
-function searchPopularGames() {
+function searchGameById(id, callback) {
+    igdbClient.games({
+        ids: [id],
+        fields: '*'
+    }).then(response => {
+        console.log(response.body);
+        let gameJson = response.body[0];
+        let game = new Game(gameJson);
+        if(typeof callback === 'function') callback(game);
+    }).catch(error => {
+        throw error;
+    });
+}
+
+function searchPopularGames(callback) {
     igdbClient.games({
         filters: {
-            'release_dates.date-gt': '2018-10-19',
-            'release_dates.date-lt': '2018-11-19',
+            'release_dates.date-gt': '2018-11-19',
+            'release_dates.date-lt': '2020-01-01',
             'popularity-gt': '80'
         },
         limit: 5,
@@ -46,13 +52,12 @@ function searchPopularGames() {
         let games = [];
         for(let i = 0; i < jsonArr.length; i++) {
             let game = new Game(jsonArr[i]);
-            game.consoleInfo();
             games.push(game);
         }
 
-        return games;
+        if (typeof callback === 'function') callback(games);
     }).catch(error => {
-        console.log(error);
+        throw error;
     });
 }
 
@@ -68,7 +73,8 @@ function getGenres() {
 }
 
 module.exports = {
-    searchGame: searchGame,
+    searchGame: searchGameByPhrase,
+    searchGameById: searchGameById,
     searchPopularGames: searchPopularGames,
     getGenres: getGenres
 }
